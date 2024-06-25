@@ -1,0 +1,14 @@
+package views
+
+import "strconv"
+
+templ Index(count int) {
+    <html>
+        <head>
+            <title>Our First HTMX</title>
+        </head>
+        <body>
+            Count {strconv.Iota(count)}
+        </body>
+    </html>
+}
