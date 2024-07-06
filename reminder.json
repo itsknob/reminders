@@ -1,0 +1,19 @@
+{
+    "id": 1,
+    "name": "Clean",
+    "description": "Clean all the things",
+    "schedule": {
+        "time": {
+            "hour": 0,
+            "minute": 0
+        },
+        "repeat": {
+            "seconds": 30,
+            "minutes": 0,
+            "hours": 0,
+            "days": 0,
+            "weeks": 0,
+            "months": 0
+        }
+    }
+}
