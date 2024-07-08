@@ -15,7 +15,8 @@ import (
 )
 
 func fooHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("GET - /foo")
+	path := r.URL.Path
+	fmt.Printf("GET - %s\n", path)
 	fmt.Fprintf(w, "You've reached Foo")
 	w.Write([]byte("Hello from /foo"))
 }
@@ -59,7 +60,7 @@ func main() {
 
 	// fs := http.FileServer(http.Dir("static/"))
 	// http.Handle("/static/", http.StripPrefix("/static/", fs))
-	fmt.Println("Routes: %+v", http.DefaultServeMux)
+	fmt.Printf("Routes: %+v\n", http.DefaultServeMux)
 
 	fmt.Println("Listening on :8080")
 	http.ListenAndServe(":8080", nil)
