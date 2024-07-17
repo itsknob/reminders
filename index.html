@@ -1,0 +1,44 @@
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+    <script src="https://unpkg.com/htmx.org@2.0.1/dist/htmx.js" integrity="sha384-gpIh5aLQ0qmX8kZdyhsd6jA24uKLkqIr1WAGtantR4KsS97l/NRBvh8/8OYGThAf" crossorigin="anonymous"></script>
+    <style>
+        #container {
+            padding: 32px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-gap: 16px;
+        }
+
+        #form {
+            display: flex;
+            flex-flow: column;
+        }
+    </style>
+</head>
+<body>
+    <main id="container">
+        <div id="list-container">
+            <ul id="list">
+                    {{ range . }}
+                    {{ block "list-item" . }}
+                        <li>{{ .Id }} - {{ .Title }}</li>
+                    {{ end }}
+                    {{ end }}
+            </ul>
+        </div>
+            <div id="form-container">
+                <form
+                    id="form"
+                    name="form"
+                    hx-post="/reminders"
+                    hx-target="#list"
+                    hx-swap="beforeend"
+                >
+                    <input type="text" name="title" />
+                    <input type="submit" />
+            </div>
+    </main>
+</body>
+</html>
