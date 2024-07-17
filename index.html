@@ -1,9 +1,9 @@
 <html>
-<head>
-    <meta charset="UTF-8" />
-    <title>Document</title>
-    <script src="https://unpkg.com/htmx.org@2.0.1/dist/htmx.js" integrity="sha384-gpIh5aLQ0qmX8kZdyhsd6jA24uKLkqIr1WAGtantR4KsS97l/NRBvh8/8OYGThAf" crossorigin="anonymous"></script>
-    <style>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Document</title>
+        <script src="https://unpkg.com/htmx.org@2.0.1/dist/htmx.js" integrity="sha384-gpIh5aLQ0qmX8kZdyhsd6jA24uKLkqIr1WAGtantR4KsS97l/NRBvh8/8OYGThAf" crossorigin="anonymous"></script>
+        <style>
         #container {
             padding: 32px;
             display: grid;
@@ -12,22 +12,59 @@
         }
 
         #form {
+            margin: 4px;
+            padding: 4px;
             display: flex;
             flex-flow: column;
         }
-    </style>
-</head>
-<body>
-    <main id="container">
-        <div id="list-container">
-            <ul id="list">
+
+        .list-item {
+            border: 2px solid black;
+            border-radius: 5px;
+            margin: 4px;
+        }
+
+        .list-item > div {
+            margin: 4px;
+        }
+        </style>
+    </head>
+    <body>
+        <main id="container">
+            <div id="list-container">
+                <h1>Reminders</h1>
+                <ul id="list">
                     {{ range . }}
                     {{ block "list-item" . }}
-                        <li>{{ .Id }} - {{ .Title }}</li>
+                    <li class="list-item" id="list-item-{{ .Id }}" >
+                        <div>
+                            <h2>{{ .Title }}</h2>
+                            <p>ID: {{ .Id }}</p>
+                            <p>{{ .Description }}</p>
+                            <input
+                                type="checkbox"
+                                disabled
+                                name="completed"
+                                {{ if .Completed }}
+                                checked="true"
+                                {{ end }}
+                            />
+                            <label for="completed">Completed</label>
+                        </div>
+                        <div>
+                            <input
+                                type="button"
+                                value="Complete"
+                                hx-post="/reminders/{{ .Id }}/complete"
+                                hx-target="#list-item-{{ .Id }}"
+                                hx-swap="outerHTML"
+                            />
+                        </div>
+                    </li>
                     {{ end }}
                     {{ end }}
-            </ul>
-        </div>
+                </ul>
+            </div>
             <div id="form-container">
                 <form
                     id="form"
@@ -39,6 +76,6 @@
                     <input type="text" name="title" />
                     <input type="submit" />
             </div>
-    </main>
-</body>
+        </main>
+    </body>
 </html>
