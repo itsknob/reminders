@@ -2,38 +2,14 @@
     <head>
         <meta charset="UTF-8" />
         <title>Document</title>
+        <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/htmx.org@2.0.1/dist/htmx.js" integrity="sha384-gpIh5aLQ0qmX8kZdyhsd6jA24uKLkqIr1WAGtantR4KsS97l/NRBvh8/8OYGThAf" crossorigin="anonymous"></script>
-        <style>
-        #container {
-            padding: 32px;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            grid-gap: 16px;
-        }
-
-        #form {
-            margin: 4px;
-            padding: 4px;
-            display: flex;
-            flex-flow: column;
-        }
-
-        .list-item {
-            border: 2px solid black;
-            border-radius: 5px;
-            margin: 4px;
-        }
-
-        .list-item > div {
-            margin: 4px;
-        }
-        </style>
     </head>
     <body>
-        <main id="container">
-            <div id="list-container">
-                <h1>Reminders</h1>
-                <ul id="list">
+        <main id="container" class="container mx-auto px-4 grid grid-cols-2 gap-4" >
+            <div id="list-container" >
+                <h1 class="" >Reminders</h1>
+                <ul id="list" role="list">
                     {{ range . }}
                     {{ block "list-item" . }}
                     <li class="list-item" id="list-item-{{ .Id }}" >
