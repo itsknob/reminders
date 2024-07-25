@@ -44,7 +44,17 @@ func CreateSchedule(schedule *models.SchedulePostBody) (*models.Schedule, error)
         )
 
     var newSchedule *models.Schedule = nil
-    err := row.Scan(&newSchedule)
+    err := row.Scan(
+            &schedule.TimeHour,
+            &schedule.TimeMinute,
+            &schedule.RepeatSeconds,
+            &schedule.RepeatMinutes,
+            &schedule.RepeatHours,
+            &schedule.RepeatDays,
+            &schedule.RepeatWeeks,
+            &schedule.RepeatMonths,
+        )
+
     return newSchedule, err // either err will be nil, or newschedule will be nil
 }
 
@@ -57,7 +67,7 @@ func CreateReminder(reminder *models.ReminderPostBody, schedule *models.Schedule
         reminder.Description,
         schedule,
     )
-    newReminder := models.Reminder{}
+    var newReminder models.Reminder
     err := row.Scan(newReminder)
     if err != nil {
         return nil, err
@@ -69,13 +79,10 @@ func CreateReminder(reminder *models.ReminderPostBody, schedule *models.Schedule
 }
 
 func FindReminder(id string) (*models.Reminder, error) {
-    reminder := &models.Reminder{}
-    rows := remindersDb.QueryRow("SELECT * FROM reminders WHERE id=?", id)
-    err := rows.Scan(reminder)
-    if err != nil {
-        return nil, err
-    }
-    return reminder, nil
+    var reminder models.Reminder
+    row := remindersDb.QueryRow("SELECT * FROM reminders WHERE id=?", id)
+    err := row.Scan(&reminder.Id, &reminder.Title, &reminder.Description, &reminder.Completed, &reminder.Schedule.Id)
+    return &reminder, err
 }
 
 func CompleteReminder(id string) (*models.Reminder, error) {
@@ -83,20 +90,30 @@ func CompleteReminder(id string) (*models.Reminder, error) {
     if err != nil {
         return nil, err
     }
-    row := remindersDb.QueryRow("UPDATE reminders SET Completed = ? WHERE id=?", true, reminder.Id)
-    updatedReminder := models.Reminder{}
-    row.Scan(updatedReminder)
+    row := remindersDb.QueryRow("UPDATE reminders SET Completed = ? WHERE id=?", true, &reminder.Id)
+    var updatedReminder models.Reminder
+    err = row.Scan(&updatedReminder.Id, &updatedReminder.Title, &updatedReminder.Description, &updatedReminder.Completed, &updatedReminder.Schedule.Id)
 
-    return &updatedReminder, nil
+    return &updatedReminder, err
 
 }
-func GetReminders() (*[]models.Reminder, error) {
-    reminders := &[]models.Reminder{}
+
+func GetReminders() ([]models.Reminder, error) {
+    reminders := []models.Reminder{}
+
     rows, err := remindersDb.Query("select * from reminders")
+    defer rows.Close()
+
     if err != nil {
         return reminders, err
     }
-    err = rows.Scan(reminders)
-    log.Printf("GetReminders - %+v", reminders)
+
+    for rows.Next() {
+        var reminder models.Reminder
+        err = rows.Scan(&reminder.Id, &reminder.Title, &reminder.Description, &reminder.Completed, &reminder.Schedule.Id)
+        log.Printf("GetReminders - Reminder %s - %+v", reminder.Id, reminder)
+        reminders = append(reminders, reminder)
+    }
+
     return reminders, err
 }

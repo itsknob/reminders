@@ -33,7 +33,6 @@ func IndexPage(w http.ResponseWriter, r *http.Request) {
         w.WriteHeader(http.StatusNotFound)
         json.NewEncoder(w).Encode(reminders)
     }
-    log.Printf("IndexPage - %+v", reminders)
     tmpl.Execute(w, reminders)
 }
 
@@ -84,7 +83,7 @@ func CompleteReminder(w http.ResponseWriter, r *http.Request) {
     log.Printf("Completed Reminder %s", id)
 
     tmpl := template.Must(template.ParseFiles("index.html"))
-    tmpl.ExecuteTemplate(w, "list-item", updatedReminder)
+    tmpl.ExecuteTemplate(w, "list-item", &updatedReminder)
 }
 
 
