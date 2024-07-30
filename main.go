@@ -83,7 +83,8 @@ func CompleteReminder(w http.ResponseWriter, r *http.Request) {
     log.Printf("Completed Reminder %s", id)
 
     tmpl := template.Must(template.ParseFiles("index.html"))
-    tmpl.ExecuteTemplate(w, "list-item", &updatedReminder)
+    log.Printf("%+v", *updatedReminder)
+    tmpl.ExecuteTemplate(w, "list-item", updatedReminder)
 }
 
 

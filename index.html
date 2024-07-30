@@ -11,12 +11,12 @@
                 <h1 class="" >Reminders</h1>
                 <ul id="list" role="list">
                     {{ range . }}
+                    {{print .}}
                     {{ block "list-item" . }}
                     <li class="list-item" id="list-item-{{ .Id }}" >
                         <div>
                             <h2>{{ .Title }}</h2>
                             <p>ID: {{ .Id }}</p>
-                            <p>{{ .Description }}</p>
                             <input
                                 type="checkbox"
                                 disabled
@@ -28,13 +28,13 @@
                             <label for="completed">Completed</label>
                         </div>
                         <div>
-                            <input
+                            <button
                                 type="button"
-                                value="Complete"
                                 hx-post="/reminders/{{ .Id }}/complete"
                                 hx-target="#list-item-{{ .Id }}"
-                                hx-swap="outerHTML"
-                            />
+                            >
+                                Complete
+                            </button>
                         </div>
                     </li>
                     {{ end }}

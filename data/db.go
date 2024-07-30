@@ -90,9 +90,11 @@ func CompleteReminder(id string) (*models.Reminder, error) {
     if err != nil {
         return nil, err
     }
-    row := remindersDb.QueryRow("UPDATE reminders SET Completed = ? WHERE id=?", true, &reminder.Id)
+    row := remindersDb.QueryRow("UPDATE reminders SET completed=? WHERE id=? RETURNING *", true, reminder.Id)
     var updatedReminder models.Reminder
     err = row.Scan(&updatedReminder.Id, &updatedReminder.Title, &updatedReminder.Description, &updatedReminder.Completed, &updatedReminder.Schedule.Id)
+
+    log.Printf("db - CompleteReminder - &updatedReminder: %+v", &updatedReminder)
 
     return &updatedReminder, err
 
