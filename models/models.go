@@ -12,6 +12,7 @@ type ReminderPostBody struct {
     Title string `json:"title"`
     Completed bool `json:"completed"`
     Description string `json:"description,omitempty"`
+    SchedulePostBody
 }
 
 type Schedule struct {

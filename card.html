@@ -1,0 +1,14 @@
+<div class="block max-w-md p-4 bg-white border border-gray-200 rounded-lg shadow dark:border-gray-700">
+    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+        Reminder
+    </h5>
+    <p>
+        {{ .Title }} - {{ .Description }}
+    </p>
+    <div>
+        <input type="checkbox" disabled name="completed" {{ if .Completed }} checked="true" {{ end }} />
+        <label for="completed" class="font-normal text-gray-700 dark:text-gray-400">
+            Completed
+        </label>
+    </div>
+</div>

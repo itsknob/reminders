@@ -14,128 +14,156 @@ import (
 
 func main() {
 
-    fmt.Println("Hello, world!")
+	fmt.Println("Hello, world!")
 
-    http.HandleFunc("/", IndexPage)
-    http.HandleFunc("/reminders/{id}", GetReminder)
-    http.HandleFunc("/reminders", GetReminders)
-    http.HandleFunc("POST /reminders", NewReminder)
-    http.HandleFunc("POST /reminders/{id}/complete", CompleteReminder)
+	http.HandleFunc("/", IndexPage)
+	http.HandleFunc("/reminders/{id}", GetReminder)
+	http.HandleFunc("/reminders", GetReminders)
+	http.HandleFunc("POST /reminders", NewReminder)
+	http.HandleFunc("POST /reminders/{id}/complete", CompleteReminder)
 
-    log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func IndexPage(w http.ResponseWriter, r *http.Request) {
-    log.Printf("GET - Index.html")
-    tmpl := template.Must(template.ParseFiles("index.html"))
-    reminders, err := data.GetReminders()
-    if err != nil {
-        w.WriteHeader(http.StatusNotFound)
-        json.NewEncoder(w).Encode(reminders)
-    }
-    tmpl.Execute(w, reminders)
+	log.Printf("GET - Index.html")
+	tmpl := template.Must(template.ParseFiles("index.html"))
+	reminders, err := data.GetReminders()
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(reminders)
+	}
+	tmpl.Execute(w, reminders)
 }
 
-func NewSchedule(w http.ResponseWriter, r  *http.Request) {
-    timeHour, _ := strconv.Atoi(r.PostFormValue("timeHour"))
-    timeMinute, _ := strconv.Atoi(r.PostFormValue("timeMinute"))
-    repeatSeconds, _ := strconv.Atoi(r.PostFormValue("repeatSeconds"))
-    repeatMinutes, _ := strconv.Atoi(r.PostFormValue("repeatMinutes"))
-    repeatHours, _ := strconv.Atoi(r.PostFormValue("repeatHours"))
-    repeatDays, _ := strconv.Atoi(r.PostFormValue("repeatDays"))
-    repeatWeeks, _ := strconv.Atoi(r.PostFormValue("repeatWeeks"))
-    repeatMonths, _ := strconv.Atoi(r.PostFormValue("repeatMonths"))
+func NewSchedule(w http.ResponseWriter, r *http.Request) {
+	timeHour, _ := strconv.Atoi(r.PostFormValue("timeHour"))
+	timeMinute, _ := strconv.Atoi(r.PostFormValue("timeMinute"))
+	repeatSeconds, _ := strconv.Atoi(r.PostFormValue("repeatSeconds"))
+	repeatMinutes, _ := strconv.Atoi(r.PostFormValue("repeatMinutes"))
+	repeatHours, _ := strconv.Atoi(r.PostFormValue("repeatHours"))
+	repeatDays, _ := strconv.Atoi(r.PostFormValue("repeatDays"))
+	repeatWeeks, _ := strconv.Atoi(r.PostFormValue("repeatWeeks"))
+	repeatMonths, _ := strconv.Atoi(r.PostFormValue("repeatMonths"))
 
-    newSchedule, err := data.CreateSchedule(&models.SchedulePostBody{
-        TimeHour: timeHour,
-        TimeMinute: timeMinute,
-        RepeatSeconds: repeatSeconds,
-        RepeatMinutes: repeatMinutes,
-        RepeatHours: repeatHours,
-        RepeatDays: repeatDays,
-        RepeatWeeks: repeatWeeks,
-        RepeatMonths: repeatMonths,
-    })
-    if err != nil {
-        w.WriteHeader(http.StatusNotFound)
-        json.NewEncoder(w).Encode(err)
-    }
+	newSchedule, err := data.CreateSchedule(&models.SchedulePostBody{
+		TimeHour:      timeHour,
+		TimeMinute:    timeMinute,
+		RepeatSeconds: repeatSeconds,
+		RepeatMinutes: repeatMinutes,
+		RepeatHours:   repeatHours,
+		RepeatDays:    repeatDays,
+		RepeatWeeks:   repeatWeeks,
+		RepeatMonths:  repeatMonths,
+	})
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(err)
+	}
 
-    w.WriteHeader(http.StatusOK)
-    json.NewEncoder(w).Encode(newSchedule)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(newSchedule)
 
 }
 
 func CompleteReminder(w http.ResponseWriter, r *http.Request) {
-    id := r.PathValue("id")
+	id := r.PathValue("id")
 
-    if id == "" {
-        w.WriteHeader(http.StatusNotFound)
-        return
-    }
+	if id == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
-    updatedReminder, err := data.CompleteReminder(id)
-    if err != nil {
-        w.WriteHeader(http.StatusNotFound)
-        json.NewEncoder(w).Encode(err)
-    }
+	updatedReminder, err := data.CompleteReminder(id)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(err)
+	}
 
-    log.Printf("Completed Reminder %s", id)
+	log.Printf("Completed Reminder %s", id)
 
-    tmpl := template.Must(template.ParseFiles("index.html"))
-    log.Printf("%+v", *updatedReminder)
-    tmpl.ExecuteTemplate(w, "list-item", updatedReminder)
+	tmpl := template.Must(template.ParseFiles("index.html"))
+	log.Printf("%+v", *updatedReminder)
+	tmpl.ExecuteTemplate(w, "list-item", updatedReminder)
 }
 
+func NewReminder(w http.ResponseWriter, r *http.Request) {
 
-func NewReminder(w http.ResponseWriter, r  *http.Request) {
+	fmt.Println("New Reminder")
 
-    title := r.PostFormValue("title")
-    description := r.PostFormValue("description")
+	title := r.PostFormValue("title")
+	description := r.PostFormValue("description")
+	timeHour := r.PostFormValue("timeHour")
+	timeMinute := r.PostFormValue("timeMinute")
+	repeatSeconds := r.PostFormValue("repeatSeconds")
+	repeatMinutes := r.PostFormValue("repeatMinutes")
+	repeatHours := r.PostFormValue("repeatHours")
+	repeatDays := r.PostFormValue("repeatDays")
+	repeatWeeks := r.PostFormValue("repeatWeeks")
+	repeatMonths := r.PostFormValue("repeatMonths")
 
-    newReminder, err := data.CreateReminder(&models.ReminderPostBody{
-        Title: title,
-        Completed: false,
-        Description: description,
-    }, nil)
+	// todo write a helper function that parses these values and strconv.Atoi's them
 
-    if err != nil {
-        w.WriteHeader(http.StatusNotFound)
-        json.NewEncoder(w).Encode(err)
-    }
+	schedule, err = data.CreateSchedule(&models.SchedulePostBody{
+		TimeHour:      strconv.Atoi(timeHour),
+		TimeMinute:    strconv.Atoi(timeMinute),
+		RepeatSeconds: strconv.Atoi(repeatSeconds),
+		RepeatMinutes: strconv.Atoi(repeatMinutes),
+		RepeatHours:   strconv.Atoi(repeatHours),
+		RepeatDays:    strconv.Atoi(repeatDays),
+		RepeatWeeks:   strconv.Atoi(repeatWeeks),
+		RepeatMonths:  strconv.Atoi(repeatMonths),
+	})
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(err)
+	}
 
+	title := r.PostFormValue("title")
+	description := r.PostFormValue("description")
 
-    tmpl := template.Must(template.ParseFiles("index.html"))
-    tmpl.ExecuteTemplate(w, "list-item", newReminder)
+	newReminder, err := data.CreateReminder(&models.ReminderPostBody{
+		Title:       title,
+		Completed:   false,
+		Description: description,
+	}, nil)
+
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(err)
+	}
+
+	tmpl := template.Must(template.ParseFiles("index.html"))
+	tmpl.ExecuteTemplate(w, "list-item", newReminder)
 }
 
-func  GetReminder(w http.ResponseWriter, r *http.Request) {
-    id := r.PathValue("id")
+func GetReminder(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
 
-    if id == "" {
-        w.WriteHeader(http.StatusNotFound)
-        return
-    }
+	if id == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
-    log.Printf("Found reminder with Id %s", id)
-    reminder, err := data.FindReminder(id)
-    if err != nil {
-        w.WriteHeader(http.StatusNotFound)
-        json.NewEncoder(w).Encode(err)
-    }
-    json.NewEncoder(w).Encode(reminder)
+	log.Printf("Found reminder with Id %s", id)
+	reminder, err := data.FindReminder(id)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(err)
+	}
+	json.NewEncoder(w).Encode(reminder)
 
 }
 
 func GetReminders(w http.ResponseWriter, r *http.Request) {
-    log.Printf("Getting all Reminders")
-    reminders, err := data.GetReminders()
+	log.Printf("Getting all Reminders")
+	reminders, err := data.GetReminders()
 
-    if err != nil {
-        w.WriteHeader(http.StatusNotFound)
-        json.NewEncoder(w).Encode(err)
-    }
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(err)
+	}
 
-    json.NewEncoder(w).Encode(reminders)
+	json.NewEncoder(w).Encode(reminders)
 
 }

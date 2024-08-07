@@ -1,58 +1,91 @@
 <html>
-    <head>
-        <meta charset="UTF-8" />
-        <title>Document</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <script src="https://unpkg.com/htmx.org@2.0.1/dist/htmx.js" integrity="sha384-gpIh5aLQ0qmX8kZdyhsd6jA24uKLkqIr1WAGtantR4KsS97l/NRBvh8/8OYGThAf" crossorigin="anonymous"></script>
-    </head>
-    <body>
-        <main id="container" class="container mx-auto px-4 grid grid-cols-2 gap-4" >
-            <div id="list-container" >
-                <h1 class="" >Reminders</h1>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@2.0.1/dist/htmx.js"
+        integrity="sha384-gpIh5aLQ0qmX8kZdyhsd6jA24uKLkqIr1WAGtantR4KsS97l/NRBvh8/8OYGThAf"
+        crossorigin="anonymous"></script>
+</head>
+
+<body>
+    {{ define "card" }}
+    <div id="list-item-{{ .Id }}"
+        class="block max-w-md p-4 bg-white border border-gray-200 rounded-lg shadow dark:border-gray-700">
+        <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+            {{ .Title }}
+        </h5>
+        <blockquote> {{ .Description }} </blockquote>
+        <div>
+            <input type="checkbox" disabled name="completed" {{ if .Completed }} checked="true" {{ end }} />
+            <l abel for="completed" class="font-normal text-gray-700 dark:text-gray-400">
+                Completed
+                </label>
+                <button type="button" hx-post="/reminders/{{ .Id }}/complete" hx-target="#list-item-{{ .Id }}">
+                    Complete
+                </button>
+        </div>
+    </div>
+    {{ end }}
+
+    <div id="container" class="container mx-auto px-2 grid grid-cols-2">
+        <div id="list-container" class="flex-auto">
+            <div class="mx-auto text-center">
+                <h1 class="text-xl">Reminders</h1>
+            </div>
+            <div id="list-item-container"
+                class="p-2 max-w-md mx-auto bg-white rounded-xl border-black border-2 shadow-lg flex items-center space-x-2">
                 <ul id="list" role="list">
                     {{ range . }}
-                    {{print .}}
                     {{ block "list-item" . }}
-                    <li class="list-item" id="list-item-{{ .Id }}" >
-                        <div>
-                            <h2>{{ .Title }}</h2>
-                            <p>ID: {{ .Id }}</p>
-                            <input
-                                type="checkbox"
-                                disabled
-                                name="completed"
-                                {{ if .Completed }}
-                                checked="true"
-                                {{ end }}
-                            />
-                            <label for="completed">Completed</label>
-                        </div>
-                        <div>
-                            <button
-                                type="button"
-                                hx-post="/reminders/{{ .Id }}/complete"
-                                hx-target="#list-item-{{ .Id }}"
-                            >
-                                Complete
-                            </button>
-                        </div>
-                    </li>
+                    {{ template "card" . }}
                     {{ end }}
                     {{ end }}
                 </ul>
             </div>
-            <div id="form-container">
-                <form
-                    id="form"
-                    name="form"
-                    hx-post="/reminders"
-                    hx-target="#list"
-                    hx-swap="beforeend"
-                >
-                    <input type="text" name="title" />
-                    <input type="submit" />
-                </form>
+        </div>
+        <div id="form-container" class="flex-auto">
+            <div class="mx-auto text-center">
+                <h1 class="text-xl">Reminders</h1>
             </div>
-        </main>
-    </body>
+            <form id="form" name="form" hx-post="/reminders" hx-target="#list" hx-swap="beforeend">
+                <div class="max-w-md mx-auto grid grid-cols-2 grid-rows-*">
+
+                    <label class="border border-black rounded p-2" for="title">Title</label>
+                    <input class="border border-black rounded p-2" type="text" label="title" name="title">
+                    <label class="border border-black rounded p-2" for="description">Description</label>
+                    <input class="border border-black rounded p-2" type="text" label="description" name="description">
+                    <label class="border border-black rounded p-2" for="timeHour">Time Hour</label>
+                    <input value=0 class="border border-black rounded p-2" type="number" label="timeHour"
+                        name="timeHour">
+                    <label class="border border-black rounded p-2" for="timeMinute">Time Minute</label>
+                    <input value=0 class="border border-black rounded p-2" type="number" label="timeMinute"
+                        name="timeMinute">
+                    <label class="border border-black rounded p-2" for="repeatSeconds">Repeat Seconds</label>
+                    <input value=0 class="border border-black rounded p-2" type="number" label="repeatSeconds"
+                        name="repeatSeconds">
+                    <label class="border border-black rounded p-2" for="repeatMinutes">Repeat Minutes</label>
+                    <input value=0 class="border border-black rounded p-2" type="number" label="repeatMinutes"
+                        name="repeatMinutes">
+                    <label class="border border-black rounded p-2" for="repeatHours">Repeat Hours</label>
+                    <input value=0 class="border border-black rounded p-2" type="number" label="repeatHours"
+                        name="repeatHours">
+                    <label class="border border-black rounded p-2" for="repeatDays">Repeat Days</label>
+                    <input value=0 class="border border-black rounded p-2" type="number" label="repeatDays"
+                        name="repeatDays">
+                    <label class="border border-black rounded p-2" for="repeatWeeks">Repeat Weeks</label>
+                    <input value=0 class="border border-black rounded p-2" type="number" label="repeatWeeks"
+                        name="repeatWeeks">
+                    <label class="border border-black rounded p-2" for="repeatMonths">Repeat Months</label>
+                    <input value=0 class="border border-black rounded p-2" type="number" label="repeatMonths"
+                        name="repeatMonths">
+
+                    <input class="border border-black rounded p-2 col-span-full" type="submit">
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+
 </html>
