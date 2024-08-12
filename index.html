@@ -19,12 +19,12 @@
         <blockquote> {{ .Description }} </blockquote>
         <div>
             <input type="checkbox" disabled name="completed" {{ if .Completed }} checked="true" {{ end }} />
-            <l abel for="completed" class="font-normal text-gray-700 dark:text-gray-400">
+            <label for="completed" class="font-normal text-gray-700 dark:text-gray-400">
                 Completed
-                </label>
-                <button type="button" hx-post="/reminders/{{ .Id }}/complete" hx-target="#list-item-{{ .Id }}">
-                    Complete
-                </button>
+            </label>
+            <button type="button" hx-post="/reminders/{{ .Id }}/complete" hx-target="#list-item-{{ .Id }}">
+                Complete
+            </button>
         </div>
     </div>
     {{ end }}
