@@ -123,7 +123,7 @@ func CreateReminder(reminder *models.ReminderPostBody) (*models.Reminder, error)
 
 func FindReminder(id string) (*models.Reminder, error) {
 	var reminder models.Reminder
-	row := remindersDb.QueryRow("SELECT r.* FROM reminders WHERE id=?", id)
+	row := remindersDb.QueryRow("SELECT * FROM reminders WHERE id=?", id)
 	err := row.Scan(&reminder.Id, &reminder.Title, &reminder.Description,
 		&reminder.Completed, &reminder.CreatedDate, &reminder.StartDate,
 		&reminder.EndDate, &reminder.TimeHour, &reminder.TimeMinute,
@@ -138,10 +138,17 @@ func CompleteReminder(id string) (*models.Reminder, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	log.Printf("db - CompleteReminder - reminder: \n%+v\n", reminder)
+
 	row := remindersDb.QueryRow("UPDATE reminders SET completed=? WHERE id=? RETURNING *", true, reminder.Id)
+
 	var updatedReminder models.Reminder
-	err = row.Scan(&updatedReminder.Id, &updatedReminder.Title,
-		&updatedReminder.Description, &updatedReminder.Completed,
+	err = row.Scan(
+		&updatedReminder.Id,
+		&updatedReminder.Title,
+		&updatedReminder.Description,
+		&updatedReminder.Completed,
 		&updatedReminder.CreatedDate,
 		&updatedReminder.StartDate,
 		&updatedReminder.EndDate,
@@ -154,6 +161,10 @@ func CompleteReminder(id string) (*models.Reminder, error) {
 		&updatedReminder.RepeatWeeks,
 		&updatedReminder.RepeatMonths,
 	)
+
+	if err != nil {
+		panic(err)
+	}
 
 	log.Printf("db - CompleteReminder - &updatedReminder: %+v", &updatedReminder)
 

@@ -83,12 +83,13 @@ func CompleteReminder(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(err)
+		panic(err)
 	}
 
+	log.Printf("updatedReminder - %+v\n", updatedReminder)
 	log.Printf("Completed Reminder %s\n", id)
 
 	tmpl := template.Must(template.ParseFiles("index.html"))
-	log.Printf("*updatedReminder - %+v\n", *updatedReminder)
 	tmpl.ExecuteTemplate(w, "list-item", updatedReminder)
 }
 
