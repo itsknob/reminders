@@ -34,42 +34,12 @@ func IndexPage(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(reminders)
-		panic(fmt.Sprintf("Failed to get Reminders %+v", err))
+		log.Printf("Failed to get Reminders \n%+v\n", err)
+		return
 	}
 	log.Printf("IndexPage - reminders: \n%+v\n", reminders)
 	tmpl.Execute(w, reminders)
 }
-
-// func NewSchedule(w http.ResponseWriter, r *http.Request) {
-// 	timeHour, _ := strconv.Atoi(r.PostFormValue("timeHour"))
-// 	timeMinute, _ := strconv.Atoi(r.PostFormValue("timeMinute"))
-// 	repeatSeconds, _ := strconv.Atoi(r.PostFormValue("repeatSeconds"))
-// 	repeatMinutes, _ := strconv.Atoi(r.PostFormValue("repeatMinutes"))
-// 	repeatHours, _ := strconv.Atoi(r.PostFormValue("repeatHours"))
-// 	repeatDays, _ := strconv.Atoi(r.PostFormValue("repeatDays"))
-// 	repeatWeeks, _ := strconv.Atoi(r.PostFormValue("repeatWeeks"))
-// 	repeatMonths, _ := strconv.Atoi(r.PostFormValue("repeatMonths"))
-//
-// 	newSchedule, err := data.CreateSchedule(&models.SchedulePostBody{
-// 		TimeHour:      timeHour,
-// 		TimeMinute:    timeMinute,
-// 		RepeatSeconds: repeatSeconds,
-// 		RepeatMinutes: repeatMinutes,
-// 		RepeatHours:   repeatHours,
-// 		RepeatDays:    repeatDays,
-// 		RepeatWeeks:   repeatWeeks,
-// 		RepeatMonths:  repeatMonths,
-// 	})
-//
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusNotFound)
-// 		json.NewEncoder(w).Encode(err)
-// 	}
-//
-// 	w.WriteHeader(http.StatusOK)
-// 	json.NewEncoder(w).Encode(newSchedule)
-//
-// }
 
 func CompleteReminder(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
@@ -83,7 +53,8 @@ func CompleteReminder(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(err)
-		panic(err)
+		log.Printf("Failed to update reminder: %+v\n", err)
+		return
 	}
 
 	log.Printf("updatedReminder - %+v\n", updatedReminder)
@@ -161,7 +132,8 @@ func NewReminder(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(err)
-		panic(err)
+		log.Printf("Failed to create reminder: %+v\n", err)
+		return
 	}
 
 	tmpl := template.Must(template.ParseFiles("index.html"))

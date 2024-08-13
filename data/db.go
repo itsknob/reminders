@@ -23,50 +23,6 @@ func init() {
 	}
 }
 
-// func CreateSchedule(schedule *models.SchedulePostBody) (*models.Schedule, error) {
-// 	fmt.Printf("db - CreateSchedule - SchedulePostBody %+v\n", schedule)
-//
-// 	newSchedule := models.Schedule{}
-// 	err := remindersDb.QueryRow(`
-//         insert into schedules
-//         values (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-//         returning *;`,
-// 		time.Now().UTC().String(), // created_date
-// 		time.Now().UTC().String(), // start_date
-// 		"",
-// 		&schedule.TimeHour,
-// 		&schedule.TimeMinute,
-// 		&schedule.RepeatSeconds,
-// 		&schedule.RepeatMinutes,
-// 		&schedule.RepeatHours,
-// 		&schedule.RepeatDays,
-// 		&schedule.RepeatWeeks,
-// 		&schedule.RepeatMonths,
-// 	).Scan(
-// 		&newSchedule.Id,
-// 		&newSchedule.CreatedDate,
-// 		&newSchedule.StartDate,
-// 		&newSchedule.EndDate,
-// 		&newSchedule.TimeHour,
-// 		&newSchedule.TimeMinute,
-// 		&newSchedule.RepeatSeconds,
-// 		&newSchedule.RepeatMinutes,
-// 		&newSchedule.RepeatHours,
-// 		&newSchedule.RepeatDays,
-// 		&newSchedule.RepeatWeeks,
-// 		&newSchedule.RepeatMonths,
-// 	)
-//
-// 	fmt.Printf("db - CreateSchedule - newSchedule - %+v\n", newSchedule)
-//
-// 	if err != nil {
-// 		fmt.Printf("db - CreateSchedule - err: %+v\n", err)
-// 		panic(err)
-// 	}
-//
-// 	return &newSchedule, err // either err will be nil, or newschedule will be nil
-// }
-
 func CreateReminder(reminder *models.ReminderPostBody) (*models.Reminder, error) {
 
 	row := remindersDb.QueryRow(`
@@ -163,7 +119,8 @@ func CompleteReminder(id string) (*models.Reminder, error) {
 	)
 
 	if err != nil {
-		panic(err)
+		log.Printf("Failed to update reminder: %+v\n", err)
+		return &models.Reminder{}, err
 	}
 
 	log.Printf("db - CompleteReminder - &updatedReminder: %+v", &updatedReminder)
@@ -174,22 +131,15 @@ func CompleteReminder(id string) (*models.Reminder, error) {
 func GetReminders() ([]models.Reminder, error) {
 	reminders := []models.Reminder{}
 
-	log.Println("db - GetReminders - start")
-
 	rows, err := remindersDb.Query("select * from reminders")
 	defer rows.Close()
 
-	log.Println("db - GetReminders - queried")
-
 	if err != nil {
-		panic(err)
-		// return reminders, err
+		log.Printf("Failed to get reminders: %+v\n", err)
+		return reminders, err
 	}
 
-	log.Println("db - GetReminders - no err")
-
 	for rows.Next() {
-		log.Println("db - GetReminders - rows.Next")
 
 		var reminder models.Reminder
 		err = rows.Scan(
@@ -200,14 +150,13 @@ func GetReminders() ([]models.Reminder, error) {
 			&reminder.RepeatDays, &reminder.RepeatWeeks, &reminder.RepeatMonths,
 		)
 
-		log.Println("db - GetReminders - rows.Next - scanned")
-
 		if err != nil {
-			panic(err)
+			log.Printf("Failed to scan row while getting reminders: %+v\n", err)
+			return reminders, err
 		}
 
-		log.Printf("reminder: \n%+v\n", &reminder)
 		log.Printf("GetReminders - Reminder %d - %+v", reminder.Id, reminder)
+
 		reminders = append(reminders, reminder)
 	}
 
