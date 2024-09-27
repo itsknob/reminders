@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"strconv"
 
 	"knob.dev/reminders/data"
@@ -14,15 +16,19 @@ import (
 
 func main() {
 
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{AddSource: true}))
+
 	fmt.Println("Hello, world!")
+
+	fs := http.FileServer(http.Dir("./static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	http.HandleFunc("/", IndexPage)
 	http.HandleFunc("/reminders/{id}", GetReminder)
 	http.HandleFunc("/reminders", GetReminders)
 	http.HandleFunc("POST /reminders", NewReminder)
 	http.HandleFunc("POST /reminders/{id}/complete", CompleteReminder)
-
-	log.Printf("Registered Routes!")
+	logger.Info("Registered Routes!")
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
@@ -37,7 +43,7 @@ func IndexPage(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Failed to get Reminders \n%+v\n", err)
 		return
 	}
-	log.Printf("IndexPage - reminders: \n%+v\n", reminders)
+	slog.Info("IndexPage", "reminders", reminders)
 	tmpl.Execute(w, reminders)
 }
 
@@ -51,14 +57,13 @@ func CompleteReminder(w http.ResponseWriter, r *http.Request) {
 
 	updatedReminder, err := data.CompleteReminder(id)
 	if err != nil {
+		slog.Error("Failed to update reminder", "id", updatedReminder.Id)
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(err)
-		log.Printf("Failed to update reminder: %+v\n", err)
 		return
 	}
 
-	log.Printf("updatedReminder - %+v\n", updatedReminder)
-	log.Printf("Completed Reminder %s\n", id)
+	slog.Info("UpdatedReminder ", "id", id, "completed", updatedReminder.Completed)
 
 	tmpl := template.Must(template.ParseFiles("index.html"))
 	tmpl.ExecuteTemplate(w, "list-item", updatedReminder)
@@ -89,29 +94,6 @@ func NewReminder(w http.ResponseWriter, r *http.Request) {
 	repeatWeeks := getPostFormValueAsInt(r, "repeatWeeks")
 	repeatMonths := getPostFormValueAsInt(r, "repeatMonths")
 
-	// scheduleInput := &models.SchedulePostBody{
-	// 	TimeHour:      timeHour,
-	// 	TimeMinute:    timeMinute,
-	// 	RepeatSeconds: repeatSeconds,
-	// 	RepeatMinutes: repeatMinutes,
-	// 	RepeatHours:   repeatHours,
-	// 	RepeatDays:    repeatDays,
-	// 	RepeatWeeks:   repeatWeeks,
-	// 	RepeatMonths:  repeatMonths,
-	// }
-	//
-	// fmt.Printf("main - NewReminder - scheduleInput: "bu\n%+v\n", scheduleInput)
-	//
-	// schedule, err := data.CreateSchedule(scheduleInput)
-
-	// if err != nil {
-	// 	w.WriteHeader(http.StatusNotFound)
-	// 	json.NewEncoder(w).Encode(err)
-	// 	return
-	// }
-
-	// fmt.Printf("main - NewReminder - Schedule: \n%+v\n", schedule)
-
 	newReminder, err := data.CreateReminder(&models.ReminderPostBody{
 		Title:         title,
 		Completed:     false,
@@ -137,9 +119,6 @@ func NewReminder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tmpl := template.Must(template.ParseFiles("index.html"))
-
-	fmt.Printf("main - NewReminder - newReminder:\n%+v\n", newReminder)
-
 	tmpl.ExecuteTemplate(w, "list-item", newReminder)
 }
 
@@ -157,10 +136,8 @@ func GetReminder(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(err)
 	}
 
-	log.Printf("Found reminder with Id %s\n", id)
-
+	slog.Info("Found Reminder", "id", id)
 	json.NewEncoder(w).Encode(reminder)
-
 }
 
 func GetReminders(w http.ResponseWriter, r *http.Request) {
@@ -172,6 +149,6 @@ func GetReminders(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(err)
 	}
 
+	slog.Info("Found Reminders", "count", len(reminders))
 	json.NewEncoder(w).Encode(reminders)
-
 }

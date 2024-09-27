@@ -2,9 +2,8 @@ package data
 
 import (
 	"database/sql"
-	// "fmt"
-	"log"
-	// "time"
+	"log/slog"
+	"strconv"
 
 	"knob.dev/reminders/models"
 	_ "modernc.org/sqlite"
@@ -19,6 +18,7 @@ func init() {
 	db, err := sql.Open("sqlite", "reminders.db")
 	remindersDb = db
 	if err != nil {
+		slog.Error("Panic! Failed to open database")
 		panic(err)
 	}
 }
@@ -72,7 +72,7 @@ func CreateReminder(reminder *models.ReminderPostBody) (*models.Reminder, error)
 		return nil, err
 	}
 
-	log.Printf("Created Reminder %d with Title %s", newReminder.Id, newReminder.Title)
+	slog.Info("Created Reminder", "id", strconv.Itoa(newReminder.Id), "title", newReminder.Title)
 
 	return &newReminder, nil
 }
@@ -94,8 +94,6 @@ func CompleteReminder(id string) (*models.Reminder, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	log.Printf("db - CompleteReminder - reminder: \n%+v\n", reminder)
 
 	row := remindersDb.QueryRow("UPDATE reminders SET completed=? WHERE id=? RETURNING *", true, reminder.Id)
 
@@ -119,11 +117,9 @@ func CompleteReminder(id string) (*models.Reminder, error) {
 	)
 
 	if err != nil {
-		log.Printf("Failed to update reminder: %+v\n", err)
+		slog.Error("Failed to update reminder: %+v\n", err)
 		return &models.Reminder{}, err
 	}
-
-	log.Printf("db - CompleteReminder - &updatedReminder: %+v", &updatedReminder)
 
 	return &updatedReminder, err
 }
@@ -135,7 +131,7 @@ func GetReminders() ([]models.Reminder, error) {
 	defer rows.Close()
 
 	if err != nil {
-		log.Printf("Failed to get reminders: %+v\n", err)
+		slog.Error("Failed to get reminders: %+v\n", err)
 		return reminders, err
 	}
 
@@ -151,11 +147,9 @@ func GetReminders() ([]models.Reminder, error) {
 		)
 
 		if err != nil {
-			log.Printf("Failed to scan row while getting reminders: %+v\n", err)
+			slog.Error("Failed to scan row while getting reminders: %+v\n", err)
 			return reminders, err
 		}
-
-		log.Printf("GetReminders - Reminder %d - %+v", reminder.Id, reminder)
 
 		reminders = append(reminders, reminder)
 	}
